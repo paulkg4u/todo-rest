@@ -61,13 +61,13 @@ REST_FRAMEWORK = {
 }
 
 ROOT_URLCONF = 'krishihub_todo.urls'
+AUTH_USER_MODEL = 'auth.User'
 APPEND_SLASH = False
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [os.path.join(BASE_DIR, 'templates')]
-		,
-        'APP_DIRS': True,
+        'DIRS': [os.path.join(BASE_DIR, 'templates')],
+		'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
                 'django.template.context_processors.debug',

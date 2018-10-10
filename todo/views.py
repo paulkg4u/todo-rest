@@ -6,8 +6,11 @@ from rest_framework.decorators import api_view
 from rest_framework.permissions import IsAuthenticated
 
 
-from .models import Todo, User
-from .serializers import UserSerializer
+from .models import Todo, TodoUser
+from .serializers import TodoUserSerializer, TodoSerializer
+
+from datetime import timedelta
+from django.utils import timezone
 # Create your views here.
 
 
@@ -16,13 +19,15 @@ from .serializers import UserSerializer
 class RegistrationView(APIView):
 	def post(self, request):
 		data = request.data
-		serializer = UserSerializer(data = data)
+		serializer = TodoUserSerializer(data = data)
 		if serializer.is_valid():
 			userObject = serializer.save()
+
 			print(userObject)
 			return  Response({'success': True},status = status.HTTP_200_OK)
 		else:
 			print(serializer.errors)
+			print(serializer.error_messages)
 			return  Response({'success' : False}, status = status.HTTP_200_OK)
 
 
@@ -39,8 +44,10 @@ class TodoDetailView(APIView):
 		:param uuid:
 		:return:
 		"""
-		print(uuid)
-		return  Response({}, status = status.HTTP_200_OK)
+
+		todo = Todo.objects.get(uuid = uuid)
+		serializer =TodoSerializer(todo).data
+		return  Response(serializer, status = status.HTTP_200_OK)
 
 
 class TodoView(APIView):
@@ -55,10 +62,18 @@ class TodoView(APIView):
 		:param uuid: UUID of the user
 		:return:Serialized list of all todos asociated with the user
 		"""
-		user_uuid = request.query_params.get('uuid')
-		User.objects.get(uuid = user_uuid)
-		todos = Todo.objects.filter(user = User)
-		return  Response({}, status = status.HTTP_200_OK)
+		username = request.user
+
+		user = TodoUser.objects.get(username = username)
+		now = timezone.now()
+
+		upcoming = Todo.objects.filter(dueDate__gte=now, isComplete=False,user = user)
+		pending = Todo.objects.filter(dueDate__lte=now, isComplete=False, user = user)
+		completed = Todo.objects.filter(user = user, isComplete=True)
+		completedTodos= TodoSerializer(completed, many = True).data
+		upcomingTodos = TodoSerializer(upcoming, many=True).data
+		pendingTodos = TodoSerializer(pending, many=True).data
+		return  Response({'completed':completedTodos,'upcoming':upcomingTodos,'pending':pendingTodos}, status = status.HTTP_200_OK)
 
 	def post(self, request):
 		"""
@@ -66,7 +81,33 @@ class TodoView(APIView):
 		:param request:
 		:return:
 		"""
+		username = request.user
 		data = request.data
-		print(data)
-		return Response({}, status = status.HTTP_200_OK)
+		# user = TodoUser.objects.get(username = username)
+		# data['user']= user.uuid
+		serializer = TodoSerializer(data = data)
+		if serializer.is_valid():
+			todo = serializer.save()
+			return Response(serializer.data, status=status.HTTP_200_OK)
+		else:
+			return Response(serializer.errors, status=status.HTTP_200_OK)
+
+	def put(self, request):
+		"""
+
+		:param request:
+		:return:
+		"""
+		data = request.data
+		todo = Todo.objects.get(uuid = data['uuid'])
+
+		serializer = TodoSerializer(todo,data = data, partial=True)
+		if serializer.is_valid():
+			todo = serializer.save()
+			return Response(serializer.data, status=status.HTTP_200_OK)
+		else:
+			return Response(serializer.errors, status= status.HTTP_200_OK)
+
+
+
 
