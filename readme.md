@@ -1,6 +1,7 @@
-#Todo Rest
 
-##Installation
+# Todo Rest
+
+## Installation
 1. Create virtual environment (python3) using the following command
 
 ```virtualenv -p python3 venv```
