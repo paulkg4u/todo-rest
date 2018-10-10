@@ -17,18 +17,26 @@ from django.utils import timezone
 
 
 class RegistrationView(APIView):
+
 	def post(self, request):
+		"""
+
+		:param username: username
+		:param email : email
+		|
+		:param first_name : First name of the user
+		:param last_name : Last Name of the user
+		:param password : password to be used
+
+		:return: Success True if user created successfully, else error message
+		"""
 		data = request.data
 		serializer = TodoUserSerializer(data = data)
 		if serializer.is_valid():
 			userObject = serializer.save()
-
-			print(userObject)
 			return  Response({'success': True},status = status.HTTP_200_OK)
 		else:
-			print(serializer.errors)
-			print(serializer.error_messages)
-			return  Response({'success' : False}, status = status.HTTP_200_OK)
+			return  Response({'success' : False, 'errors': serializer.errors}, status = status.HTTP_200_OK)
 
 
 
@@ -40,9 +48,8 @@ class TodoDetailView(APIView):
 	def get(self, request, uuid):
 		"""
 		Get details about a todo
-		:param request:
-		:param uuid:
-		:return:
+		:param uuid: UUID of the todo object
+		:return: Serialized todo object
 		"""
 
 		todo = Todo.objects.get(uuid = uuid)
@@ -56,6 +63,7 @@ class TodoView(APIView):
 	"""
 	permission_classes = [IsAuthenticated]
 	def get(self, request):
+
 		"""
 		Get all todos associated with a user
 		:param request:

@@ -24,7 +24,7 @@ router = routers.DefaultRouter()
 urlpatterns = [
 	path('',include(router.urls)),
 	path('todo/', include('todo.urls')),
-	path('docs/',include_docs_urls(title = "testing", authentication_classes=[], permission_classes=[], public=True)),
+	path('docs/',include_docs_urls(title = "Todo - Rest", authentication_classes=[], permission_classes=[], public=True)),
     path('admin/', admin.site.urls),
 	url(r'^o/', include('oauth2_provider.urls', namespace='oauth2_provider')),
 ]
